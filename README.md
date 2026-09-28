@@ -1,10 +1,19 @@
+<p align="center">
+  <img src="docs/logos/qgis.png" alt="QGIS" height="72">&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/logos/merginmaps.jpg" alt="Mergin Maps" height="72">&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/logos/lutraconsulting.png" alt="Lutra Consulting" height="72">&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/logos/camptocamp-wordmark.png" alt="Camptocamp" height="72">
+</p>
+
 # Mergin Maps Community Edition, hands-on workshop
+
+QGIS user meeting, Laax. Mergin Maps is built by Lutra Consulting, the workshop by Camptocamp.
 
 Run your own Mergin Maps server on your laptop, push a QGIS project to it, survey as a field user, pull the edits back. Everything on `localhost`, no phone, no Wi-Fi needed once the images are pulled.
 
 ## Prerequisites
 
-Install before the session, they are checked at the door.
+Install before the session and make sure every check below passes. Without them it will be a long day.
 
 ### Everyone
 
