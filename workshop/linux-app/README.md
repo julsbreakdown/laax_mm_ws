@@ -7,7 +7,7 @@ Mergin Maps publishes the app for Android, iOS and Windows only, but its CI buil
 1. Open https://github.com/MerginMaps/mobile/actions/workflows/linux.yml
 2. Click the latest successful run on `master`.
 3. Under Artifacts, download `Mergin Maps <build> x86_64` (about 320 MB, a zip holding a `input-<build>-<date>-<run>.tar.gz`).
-4. Put the zip on the USB stick next to `run.sh` from this folder.
+4. Put the zip on the USB stick. `run.sh` comes with the cloned repository.
 
 Artifacts expire after 90 days, fetch a fresh one before each session.
 
@@ -17,7 +17,7 @@ Artifacts expire after 90 days, fetch a fresh one before each session.
 mkdir -p ~/workshop_mm_laax/merginmaps && cd ~/workshop_mm_laax/merginmaps
 unzip ~/Downloads/Mergin\ Maps\ *\ x86_64.zip
 tar -xzf input-*.tar.gz && rm input-*.tar.gz
-cp /path/to/stick/run.sh . && chmod +x run.sh
+cp ~/workshop_mm_laax/laax/workshop/linux-app/run.sh .
 ./run.sh
 ```
 
