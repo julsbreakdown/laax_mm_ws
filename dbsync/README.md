@@ -20,7 +20,7 @@ Both join the external network `mergin` created by the server stack, so the serv
 From `~/workshop_mm_laax/laax/dbsync`:
 
 ```sh
-cp config.yaml.template config.yaml      # then set the admin password
+cp config.yaml.template config.yaml      # then set the owner password
 docker compose up -d postgis
 docker compose run --rm dbsync /config/config.yaml --single-run   # init + one pass
 docker compose up -d dbsync                                        # daemon, every 10 s
