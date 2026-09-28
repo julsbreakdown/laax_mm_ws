@@ -34,6 +34,7 @@ The tarball is a plain install tree, not an AppImage, so a few environment varia
 | `PROJ_DATA=share/input/qgis-data/proj` | otherwise `Cannot find proj.db` |
 | `QT_QPA_PLATFORM=xcb` | the build has no Wayland plugin |
 | `QT_QUICK_BACKEND=software` | the xcb plugin was built without GLX or EGL, so Qt Quick must render in software |
+| `SPA_PLUGIN_DIR`, `PIPEWIRE_MODULE_DIR` | the bundled PipeWire looks for its plugins at the CI build path; without them the camera init aborts the app on "add feature" |
 
 The build also has its data folder baked in, `/home/runner/work/mobile/mobile/build-mm/app/android/assets/qgis-data`, and overrides `QGIS_QUICK_DATA_PATH` at startup, for `proj.db` as well as for projects. `run.sh` links that path to the bundled `share/input/qgis-data`, which needs `sudo` once, and links `projects/` inside it to `~/workshop_mm_laax/field/projects/`, where downloaded projects land.
 
