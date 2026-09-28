@@ -35,6 +35,8 @@ The tarball is a plain install tree, not an AppImage, so a few environment varia
 | `QT_QPA_PLATFORM=xcb` | the build has no Wayland plugin |
 | `QT_QUICK_BACKEND=software` | the xcb plugin was built without GLX or EGL, so Qt Quick must render in software |
 
+The build also has its data folder baked in, `/home/runner/work/mobile/mobile/build-mm/app/android/assets/qgis-data`, and overrides `QGIS_QUICK_DATA_PATH` at startup, for `proj.db` as well as for projects. `run.sh` links that path to the bundled `share/input/qgis-data`, which needs `sudo` once, and links `projects/` inside it to `~/workshop_mm_laax/field/projects/`, where downloaded projects land.
+
 ## Preset the server without the GUI
 
 Settings live in a QGIS-style profile, not in `~/.config`:
