@@ -1,0 +1,17 @@
+mergin:
+  url: http://merginmaps-proxy:8080
+  username: admin
+  password: <admin password>
+
+init_from: gpkg
+
+connections:
+  - driver: postgres
+    conn_info: "host=laax-postgis port=5432 dbname=dbsync user=dbsync password=dbsync"
+    modified: survey
+    base: survey_base
+    mergin_project: mergin/laax-survey
+    sync_file: data.gpkg
+
+daemon:
+  sleep_time: 10

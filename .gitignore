@@ -1,0 +1,22 @@
+docker/.prod.env
+docker/mergin_db/
+docker/projects/
+docker/diagnostic_logs/
+docker/*.bak
+workshop/dist/
+workshop/slides/all.md
+dbsync/config.yaml
+workshop/linux-app/app/
+laax-workshop.zip
+Mergin Maps *.zip
+todelete/
+docker/.env
+# trainer-only, kept out of the student repo
+Makefile
+docker/STEPS.md
+workshop/README.md
+workshop/TRAINER.md
+workshop/docker-compose.yml
+workshop/diagrams-src/
+workshop/slides/
+workshop/telemetry-README.md

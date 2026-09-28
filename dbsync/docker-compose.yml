@@ -1,0 +1,44 @@
+name: laax-dbsync
+
+services:
+  postgis:
+    image: postgis/postgis:16-3.4
+    container_name: laax-postgis
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dbsync
+      POSTGRES_PASSWORD: dbsync
+      POSTGRES_DB: dbsync
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dbsync -d dbsync"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - mergin
+
+  dbsync:
+    image: lutraconsulting/mergin-db-sync:2.3.0
+    container_name: laax-dbsync
+    restart: unless-stopped
+    command: ["/config/config.yaml"]
+    volumes:
+      - ./config.yaml:/config/config.yaml:ro
+      - dbsync_work:/tmp
+    depends_on:
+      postgis:
+        condition: service_healthy
+    networks:
+      - mergin
+
+volumes:
+  postgis_data:
+  dbsync_work:
+
+networks:
+  mergin:
+    external: true
