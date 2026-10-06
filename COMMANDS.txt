@@ -118,7 +118,7 @@ mergin push
 
 mergin create mergin/road-inventory --from-dir ./road-inventory
 
-mergin share-add mergin/laax-survey anna beat carla --permissions writer
+mergin share-add mergin/laax-survey DollarEsri ShapefileMustDie ByeByeFME --permissions writer
 mergin share mergin/laax-survey
 
 # or everyone from the CSV, from ~/workshop_mm_laax/laax
