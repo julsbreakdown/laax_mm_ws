@@ -1,0 +1,209 @@
+Mergin Maps Community Edition workshop, Laax
+Every command of the day, in order. Copy and paste, no need to type.
+
+Linux and Windows: run everything in a Linux terminal (on Windows: the Ubuntu WSL terminal, never PowerShell).
+Lines between < > are yours to fill in.
+
+
+############################################################
+# 01  Get the server
+############################################################
+
+mkdir -p ~/workshop_mm_laax && cd ~/workshop_mm_laax
+git clone https://github.com/julsbreakdown/laax_mm_ws.git laax
+cd laax
+ls
+
+cd docker
+cp .env.template .prod.env
+
+# two random secrets, one for each line below
+openssl rand -hex 32
+openssl rand -hex 32
+
+# edit .prod.env so these lines read:
+MERGIN_BASE_URL=http://localhost:8080
+SECRET_KEY=<first value>
+SECURITY_PASSWORD_SALT=<second value>
+MAIL_SUPPRESS_SEND=1
+CONTACT_EMAIL=you@example.com
+DB_DATABASE=mergin
+
+# checkpoint 01
+grep -E '^(MERGIN_BASE_URL|SECRET_KEY|SECURITY_PASSWORD_SALT|MAIL_SUPPRESS_SEND|CONTACT_EMAIL|DB_DATABASE)=' .prod.env
+
+
+############################################################
+# 02  Start the stack
+############################################################
+
+cd ~/workshop_mm_laax/laax/docker
+sh ../common/set_permissions.sh projects
+sh ../common/set_permissions.sh diagnostic_logs
+
+docker compose up -d
+docker compose ps
+docker compose logs -f server celery-worker
+
+curl -s http://localhost:8080/ping | python3 -m json.tool
+
+# checkpoint 02
+docker compose ps
+curl -s http://localhost:8080/ping | head -c 80; echo
+
+
+############################################################
+# 03  First login
+############################################################
+
+# the password is printed once: save it
+docker compose exec server flask init -e owner@example.com
+
+docker compose exec server flask server check
+
+# only if the check complains about permissions
+sh ../common/set_permissions.sh projects
+docker compose restart server celery-worker
+
+# checkpoint 03
+docker compose exec server flask server check
+
+
+############################################################
+# 05  The Mergin Maps app (Linux)
+############################################################
+
+mkdir -p ~/workshop_mm_laax/merginmaps && cd ~/workshop_mm_laax/merginmaps
+unzip ~/Downloads/Mergin\ Maps\ *\ x86_64.zip
+tar -xzf input-*.tar.gz && rm input-*.tar.gz
+cp ~/workshop_mm_laax/laax/workshop/linux-app/run.sh . && ./run.sh
+
+
+############################################################
+# 06  Command line
+############################################################
+
+# server CLI, from ~/workshop_mm_laax/laax/docker
+cd ~/workshop_mm_laax/laax/docker
+docker compose exec server flask --app application --help
+
+# users from the CSV
+tail -n +2 ../workshop/users.csv | while IFS=, read -r u p e role; do
+  docker compose exec -T server flask user create "$u" "$p" --email "$e" \
+    $([ "$role" = admin ] && echo --is-admin) </dev/null
+done
+
+# projects
+for t in north south east; do
+  docker compose exec -T server flask project create "survey-$t" mergin owner
+done
+
+docker compose exec server flask project download mergin/laax-survey --version 2 --directory /tmp/v2
+docker compose cp server:/tmp/v2 ./laax-survey-v2
+
+# client CLI
+python3 -m venv ~/workshop_mm_laax/venv && source ~/workshop_mm_laax/venv/bin/activate
+pip install mergin-client
+
+export MERGIN_URL=http://localhost:8080
+export MERGIN_USERNAME=owner
+export MERGIN_PASSWORD=<owner password>
+mergin list-projects mergin
+
+mergin download mergin/laax-survey ./laax-survey
+cd laax-survey
+mergin status
+mergin pull
+mergin push
+
+mergin create mergin/road-inventory --from-dir ./road-inventory
+
+mergin share-add mergin/laax-survey anna beat carla --permissions writer
+mergin share mergin/laax-survey
+
+# or everyone from the CSV, from ~/workshop_mm_laax/laax
+mergin share-add mergin/laax-survey $(tail -n +2 workshop/users.csv | cut -d, -f1) --permissions writer
+
+# checkpoint 06
+mergin list-projects mergin
+mergin share mergin/laax-survey
+
+
+############################################################
+# 07  DB Sync
+############################################################
+
+cd ~/workshop_mm_laax/laax/dbsync
+cp config.yaml.template config.yaml
+
+# config.yaml content:
+mergin:
+  url: http://merginmaps-proxy:8080
+  username: owner
+  password: <owner password>
+init_from: gpkg
+connections:
+  - driver: postgres
+    conn_info: "host=laax-postgis port=5432 dbname=dbsync user=dbsync password=dbsync"
+    modified: survey
+    base: survey_base
+    mergin_project: mergin/laax-survey
+    sync_file: data.gpkg
+daemon:
+  sleep_time: 10
+
+# optional, secrets out of the file:
+mergin:
+  password: "@format {env[MERGIN_PASSWORD]}"
+connections:
+  - conn_info: "@format host=laax-postgis port=5432 dbname=dbsync user=dbsync password={env[PGPASSWORD]}"
+
+docker compose up -d postgis
+docker compose run --rm dbsync /config/config.yaml --single-run
+
+docker compose up -d dbsync
+docker compose logs -f dbsync
+
+docker compose exec postgis psql -U dbsync -d dbsync -c '\dt survey.*'
+docker compose exec postgis psql -U dbsync -d dbsync \
+  -c 'select fid, species, count, note from survey.observations'
+
+docker compose exec postgis psql -U dbsync -d dbsync -c "
+  insert into survey.observations (species, count, note, geom)
+  values ('Marmot', 4, 'from psql',
+          ST_SetSRID(ST_MakePoint(2737500, 1189000), 2056))"
+
+docker compose exec postgis psql -U dbsync -d dbsync \
+  -c 'select count(*) from survey.observations'
+
+# checkpoint 07
+docker compose exec postgis psql -U dbsync -d dbsync \
+  -c "select obj_description('survey_base'::regnamespace)"
+
+
+############################################################
+# 08  Troubleshooting, from ~/workshop_mm_laax/laax/docker
+############################################################
+
+docker compose logs -f server celery-worker
+docker compose exec server flask server check
+docker compose exec server flask server permissions --path /data
+docker compose exec redis redis-cli monitor
+docker compose exec db psql -U postgres -d mergin -c '\dt'
+
+# Grafana
+cd ~/workshop_mm_laax/laax/common/telemetry
+docker compose -f docker-compose.otel.yml up -d
+
+# start over, deletes everything
+docker compose down -v
+sudo rm -rf mergin_db projects diagnostic_logs
+
+
+############################################################
+# 09  Stop, keep or wipe, from ~/workshop_mm_laax/laax/docker
+############################################################
+
+docker compose down       # stop, keep database and projects
+docker compose up -d      # same data comes back
+docker compose down -v && sudo rm -rf mergin_db projects diagnostic_logs   # wipe
