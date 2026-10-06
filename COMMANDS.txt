@@ -176,9 +176,9 @@ docker compose exec postgis psql -U dbsync -d dbsync -c "
 docker compose exec postgis psql -U dbsync -d dbsync \
   -c 'select count(*) from survey.observations'
 
-# checkpoint 07
+# checkpoint 07: a point added on the field device shows up here
 docker compose exec postgis psql -U dbsync -d dbsync \
-  -c "select obj_description('survey_base'::regnamespace)"
+  -c 'select count(*) from survey.observations'
 
 
 ############################################################
