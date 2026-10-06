@@ -63,3 +63,5 @@ laax/
 ```
 
 The decks are handed out as PDF. Start with `01-get-the-server.pdf`.
+
+Every command of the day is in `COMMANDS.txt`, in order: copy and paste instead of typing.
